@@ -1,38 +1,52 @@
-// server/app.js
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const bookRoutes = require('./routes/bookRoutes');
-
-/**
- * @constant {number} PORT - The port number for the server.
- */
-const PORT = process.env.PORT || 3000;
-
-/**
- * @constant {express.Application} app - The Express application instance.
- */
+const express = require("express");
 const app = express();
+const path = require("path");
+const multer = require("multer");
+require("dotenv").config();
+const connectDB = require("./config/mongodb");
 
-// Middlewares
-app.use(cors()); // Habilita CORS para permitir solicitudes desde el frontend
-app.use(express.json()); // Permite a Express parsear cuerpos de solicitud JSON
+// Conectar a MongoDB
+connectDB();
 
-// Sirve archivos estáticos desde la carpeta 'public'
-// Esto permite que el navegador acceda a index.html, style.css y app.js
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "../public")));
 
-// Prefijo para todas las rutas de la API de libros
-app.use('/api', bookRoutes);
+// Configurar multer para guardar imágenes
+const uploadsDir = path.join(__dirname, "../public/uploads");
+if (!require("fs").existsSync(uploadsDir)) {
+  require("fs").mkdirSync(uploadsDir, { recursive: true });
+}
 
-// Ruta raíz para servir el index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(
+      null,
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname),
+    );
+  },
 });
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    console.log(`Frontend accessible at http://localhost:${PORT}`);
-    console.log(`API accessible at http://localhost:${PORT}/api/books`);
-});
+const upload = multer({ storage: storage });
+app.use("/uploads", express.static(uploadsDir));
+
+const bookRoutes = require("./routes/bookRoutes");
+// Importamos el controlador de autenticación
+const authController = require("./api/authController");
+
+app.use("/api/books", upload.fields([{ name: "coverImage" }]), bookRoutes);
+
+// Rutas de autenticación
+app.post("/api/login", authController.login);
+app.post("/api/change-password", authController.changePassword);
+// Registro y gestión de usuarios
+app.post("/api/register", authController.register);
+app.get("/api/users", authController.getUsers);
+app.put("/api/users/:username", authController.updateUser);
+app.post("/api/users/:username/block", authController.blockUser);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ Servidor en http://localhost:${PORT}`));

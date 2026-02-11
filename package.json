@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node server/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,7 +12,22 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "chart.js": "^4.5.1",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
-  }
+    "dotenv": "^16.3.1",
+    "express": "^5.2.1",
+    "mongodb": "^7.1.0",
+    "mongoose": "^8.0.3",
+    "multer": "^2.0.2",
+    "pg": "^8.18.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gustin0599/Biblioteca-virtual.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Gustin0599/Biblioteca-virtual/issues"
+  },
+  "homepage": "https://github.com/Gustin0599/Biblioteca-virtual#readme"
 }

@@ -1,0 +1,346 @@
+[
+  {
+    "loanId": 1770507418191,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "usuario1",
+    "date": "2026-02-10T21:21:00.000Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507417190,
+    "bookId": "B002",
+    "bookTitle": "El Principito",
+    "username": "usuario1",
+    "date": "2026-02-10T20:45:00.000Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507163329,
+    "bookId": "B018",
+    "bookTitle": "Psicología Básica",
+    "username": "gunter",
+    "date": "2026-02-10T18:19:16.128Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507169144,
+    "bookId": "B005",
+    "bookTitle": "Introducción a la Programación",
+    "username": "gunter",
+    "date": "2026-02-10T18:19:17.739Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770502292642,
+    "bookId": "B020",
+    "bookTitle": "Manual de Cocina Tradicional",
+    "username": "usuario1",
+    "date": "2026-02-07T17:11:32.642Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770502290106,
+    "bookId": "B016",
+    "bookTitle": "Atlas de Geografía Universal",
+    "username": "usuario1",
+    "date": "2026-02-10T23:36:28.302Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770502288442,
+    "bookId": "B013",
+    "bookTitle": "El Arte de la Guerra",
+    "username": "usuario1",
+    "date": "2026-02-10T23:36:31.797Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770502286163,
+    "bookId": "B008",
+    "bookTitle": "El Señor de los Anillos: La Comunidad del Anillo",
+    "username": "usuario1",
+    "date": "2026-02-10T23:36:29.087Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770502283827,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "usuario1",
+    "date": "2026-02-10T23:36:27.519Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507407373,
+    "bookId": "B014",
+    "bookTitle": "Crimen y Castigo",
+    "username": "camilogus",
+    "date": "2026-02-10T23:37:16.843Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507411592,
+    "bookId": "B016",
+    "bookTitle": "Atlas de Geografía Universal",
+    "username": "camilogus",
+    "date": "2026-02-10T23:37:18.835Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507416770,
+    "bookId": "B002",
+    "bookTitle": "El Principito",
+    "username": "camilogus",
+    "date": "2026-02-10T23:37:17.474Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507418192,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "camilogus",
+    "date": "2026-02-10T23:37:21.442Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507161273,
+    "bookId": "B014",
+    "bookTitle": "Crimen y Castigo",
+    "username": "gunter",
+    "date": "2026-02-07T18:32:41.273Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770507170872,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "gunter",
+    "date": "2026-02-07T18:32:50.872Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770507074224,
+    "bookId": "B014",
+    "bookTitle": "Crimen y Castigo",
+    "username": "viviana",
+    "date": "2026-02-10T23:36:49.101Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507070376,
+    "bookId": "B010",
+    "bookTitle": "El Origen de las Especies",
+    "username": "viviana",
+    "date": "2026-02-10T23:36:49.458Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507067610,
+    "bookId": "B006",
+    "bookTitle": "Clean Code",
+    "username": "viviana",
+    "date": "2026-02-10T23:36:50.034Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507066489,
+    "bookId": "B007",
+    "bookTitle": "Harry Potter y la Piedra Filosofal",
+    "username": "viviana",
+    "date": "2026-02-10T23:36:48.154Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770170039561,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "admin",
+    "date": "2026-02-03T21:50:41.818Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770170038682,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "admin",
+    "date": "2026-02-03T21:50:42.949Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770170038136,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "admin",
+    "date": "2026-02-03T21:50:43.863Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770170037945,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "admin",
+    "date": "2026-02-03T21:50:44.815Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770170028327,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "admin",
+    "date": "2026-02-03T21:50:48.000Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770170028304,
+    "bookId": "B002",
+    "bookTitle": "El Principito",
+    "username": "admin",
+    "date": "2026-02-03T21:50:52.000Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770502286163,
+    "bookId": "B008",
+    "bookTitle": "El Señor de los Anillos: La Comunidad del Anillo",
+    "username": "usuario1",
+    "date": "2026-02-10T23:36:30.814Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770502288442,
+    "bookId": "B013",
+    "bookTitle": "El Arte de la Guerra",
+    "username": "usuario1",
+    "date": "2026-02-10T23:36:32.548Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770502290106,
+    "bookId": "B016",
+    "bookTitle": "Atlas de Geografía Universal",
+    "username": "usuario1",
+    "date": "2026-02-10T23:36:29.962Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770502292642,
+    "bookId": "B020",
+    "bookTitle": "Manual de Cocina Tradicional",
+    "username": "usuario1",
+    "date": "2026-02-07T22:11:32.642Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770507066489,
+    "bookId": "B007",
+    "bookTitle": "Harry Potter y la Piedra Filosofal",
+    "username": "viviana",
+    "date": "2026-02-10T23:36:48.733Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507067610,
+    "bookId": "B006",
+    "bookTitle": "Clean Code",
+    "username": "viviana",
+    "date": "2026-02-10T23:36:51.257Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507070376,
+    "bookId": "B010",
+    "bookTitle": "El Origen de las Especies",
+    "username": "viviana",
+    "date": "2026-02-07T23:31:10.376Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770507074224,
+    "bookId": "B014",
+    "bookTitle": "Crimen y Castigo",
+    "username": "viviana",
+    "date": "2026-02-10T23:36:50.473Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507161273,
+    "bookId": "B014",
+    "bookTitle": "Crimen y Castigo",
+    "username": "gunter",
+    "date": "2026-02-07T23:32:41.273Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770507163329,
+    "bookId": "B018",
+    "bookTitle": "Psicología Básica",
+    "username": "gunter",
+    "date": "2026-02-10T23:19:16.128Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507169144,
+    "bookId": "B005",
+    "bookTitle": "Introducción a la Programación",
+    "username": "gunter",
+    "date": "2026-02-10T23:19:17.739Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507170872,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "gunter",
+    "date": "2026-02-07T23:32:50.872Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770507407373,
+    "bookId": "B014",
+    "bookTitle": "Crimen y Castigo",
+    "username": "camilogus",
+    "date": "2026-02-10T23:37:18.228Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507411592,
+    "bookId": "B016",
+    "bookTitle": "Atlas de Geografía Universal",
+    "username": "camilogus",
+    "date": "2026-02-10T23:37:20.230Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507416770,
+    "bookId": "B002",
+    "bookTitle": "El Principito",
+    "username": "camilogus",
+    "date": "2026-02-10T23:37:20.602Z",
+    "status": "Devolución"
+  },
+  {
+    "loanId": 1770507418191,
+    "bookId": "B001",
+    "bookTitle": "Cien Años de Soledad",
+    "username": "camilogus",
+    "date": "2026-02-07T23:36:58.191Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770766656992,
+    "bookId": "B003",
+    "bookTitle": "Don Quijote de la Mancha",
+    "username": "camilogus",
+    "date": "2026-02-10T23:37:36.992Z",
+    "status": "Préstamo"
+  },
+  {
+    "loanId": 1770767804477,
+    "bookId": "B018",
+    "bookTitle": "Psicología Básica",
+    "username": "viviana",
+    "date": "2026-02-10T23:56:44.477Z",
+    "status": "Préstamo"
+  }
+]

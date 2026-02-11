@@ -1,113 +1,1647 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblioteca Virtual</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biblioteca Virtual | Sistema de Gestión</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <header>
-        <h1>Biblioteca Virtual</h1>
-        <nav>
-            <ul>
-                <li><a href="#" id="nav-home">Inicio</a></li>
-                <li><a href="#" id="nav-inventory">Gestionar Inventario</a></li>
-                <li><a href="#" id="nav-login">Iniciar Sesión</a></li>
-                <li><a href="#" id="nav-logout" style="display: none;">Cerrar Sesión</a></li>
-            </ul>
-        </nav>
+      <nav>
+        <div class="logo">
+          <i class="fas fa-book-reader"></i> BIBLIOTECA VIRTUAL
+        </div>
+        <ul id="nav-menu">
+          <li><a href="index.html" class="active">Inicio</a></li>
+          <li id="admin-menu" style="display: none">
+            <a href="#" onclick="toggleAdminPanel()">Gestionar Inventario</a>
+          </li>
+          <li>
+            <button
+              id="dark-mode-toggle"
+              onclick="toggleDarkMode()"
+              title="Modo oscuro"
+            >
+              <i class="fas fa-moon"></i>
+            </button>
+          </li>
+          <li id="profile-menu-item" style="display: none">
+            <a href="#" onclick="showProfileModal()" title="Mi Perfil">
+              <i class="fas fa-user-circle"></i> Perfil
+            </a>
+          </li>
+          <li><a href="#" id="auth-link">Iniciar Sesión</a></li>
+        </ul>
+      </nav>
     </header>
 
-    <main>
-        <section id="login-section" class="active">
-            <h2>Acceso de Usuario</h2>
-            <form id="login-form">
-                <label for="username">Usuario:</label>
-                <input type="text" id="username" name="username" required>
-                <label for="password">Contraseña:</label>
-                <input type="password" id="password" name="password" required>
-                <button type="submit">Entrar</button>
-            </form>
-            <p id="login-message" class="message"></p>
-        </section>
+    <main class="container">
+      <section id="welcome-section" class="card welcome-hero">
+        <div style="text-align: center; margin-bottom: 40px">
+          <div style="font-size: 3.5rem; margin-bottom: 15px">📚</div>
+          <h1 style="font-size: 2.5rem; margin-bottom: 10px">
+            Bienvenido a la Biblioteca Virtual
+          </h1>
+          <p
+            id="welcome-message"
+            style="font-size: 1.1rem; color: #64748b; margin: 0"
+          >
+            Gestiona tu colección de libros, realiza préstamos y mantén un
+            registro completo de todas tus transacciones
+          </p>
+        </div>
 
-        <section id="home-section" style="display: none;">
-            <h2>Bienvenido a la Biblioteca Virtual</h2>
-            <p>Aquí puedes consultar, prestar y devolver libros.</p>
-            <button id="show-books-button">Ver Libros Disponibles</button>
-            <div id="book-list-container">
-                <h3>Libros Disponibles</h3>
-                <input type="text" id="search-input" placeholder="Buscar por título, autor o ISBN...">
-                <button id="search-button">Buscar</button>
-                <table id="book-list-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Autor</th>
-                            <th>ISBN</th>
-                            <th>Copias</th>
-                            <th>Disponibles</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
+        <!-- Cards de Información -->
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <!-- Card 1: Libros Totales -->
+          <div
+            style="
+              background: linear-gradient(
+                135deg,
+                rgba(74, 144, 226, 0.1) 0%,
+                rgba(0, 210, 255, 0.1) 100%
+              );
+              padding: 25px;
+              border-radius: 15px;
+              border-left: 4px solid var(--primary);
+            "
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 10px">📖</div>
+            <p style="color: #64748b; margin: 0 0 8px 0; font-weight: 500">
+              Libros Disponibles
+            </p>
+            <p
+              style="
+                font-size: 1.8rem;
+                color: var(--primary);
+                font-weight: 700;
+                margin: 0;
+              "
+              id="total-books"
+            >
+              -
+            </p>
+          </div>
+
+          <!-- Card 2: Préstamos Activos (Solo Admin) -->
+          <div
+            id="admin-loans-card"
+            style="
+              background: linear-gradient(
+                135deg,
+                rgba(16, 185, 129, 0.1) 0%,
+                rgba(74, 144, 226, 0.1) 100%
+              );
+              padding: 25px;
+              border-radius: 15px;
+              border-left: 4px solid var(--success);
+              display: none;
+            "
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 10px">🤝</div>
+            <p style="color: #64748b; margin: 0 0 8px 0; font-weight: 500">
+              Registros de Préstamo
+            </p>
+            <p
+              style="
+                font-size: 1.8rem;
+                color: var(--success);
+                font-weight: 700;
+                margin: 0;
+              "
+              id="total-loans"
+            >
+              -
+            </p>
+          </div>
+
+          <!-- Card 2b: Mi Progreso (Solo Usuarios) -->
+          <div
+            id="user-achievements-card"
+            style="
+              background: linear-gradient(
+                135deg,
+                rgba(59, 130, 246, 0.1) 0%,
+                rgba(34, 197, 94, 0.1) 100%
+              );
+              padding: 25px;
+              border-radius: 15px;
+              border-left: 4px solid #3b82f6;
+            "
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 10px">📚</div>
+            <p style="color: #64748b; margin: 0 0 8px 0; font-weight: 500">
+              Tu Actividad
+            </p>
+            <p
+              style="
+                font-size: 1.8rem;
+                color: #3b82f6;
+                font-weight: 700;
+                margin: 0;
+              "
+              id="user-books-read"
+            >
+              0/0
+            </p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 8px 0 0 0">
+              <span id="user-progress-pct">0</span>% del catálogo explorado
+            </p>
+          </div>
+
+          <!-- Card 3: Rol/Información Personalizada -->
+          <div
+            id="user-role-card"
+            style="
+              background: linear-gradient(
+                135deg,
+                rgba(0, 210, 255, 0.1) 0%,
+                rgba(244, 63, 94, 0.1) 100%
+              );
+              padding: 25px;
+              border-radius: 15px;
+              border-left: 4px solid var(--accent);
+            "
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 10px" id="role-icon">
+              👤
             </div>
-            <p id="book-action-message" class="message"></p>
-        </section>
+            <p
+              style="color: #64748b; margin: 0 0 8px 0; font-weight: 500"
+              id="role-label"
+            >
+              Usuario
+            </p>
+            <p
+              style="
+                font-size: 1.8rem;
+                color: var(--accent);
+                font-weight: 700;
+                margin: 0;
+              "
+              id="role-value"
+            >
+              Regular
+            </p>
+          </div>
+        </div>
 
-        <section id="inventory-section" style="display: none;">
-            <h2>Gestionar Inventario de Libros</h2>
+        <!-- Atajos Rápidos -->
+        <div
+          style="
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #e2e8f0;
+          "
+        >
+          <h3 style="margin-bottom: 20px; color: #0f172a; font-size: 1.3rem">
+            ⚡ Acciones Rápidas
+          </h3>
+          <div
+            id="quick-actions"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 15px;
+            "
+          >
+            <!-- Contenido dinámico según el rol -->
+          </div>
+        </div>
 
-            <h3>Añadir Nuevo Libro</h3>
-            <form id="add-book-form">
-                <label for="add-bookId">ID del Libro:</label>
-                <input type="text" id="add-bookId" required>
-                <label for="add-title">Título:</label>
-                <input type="text" id="add-title" required>
-                <label for="add-author">Autor:</label>
-                <input type="text" id="add-author" required>
-                <label for="add-isbn">ISBN:</label>
-                <input type="text" id="add-isbn" required>
-                <label for="add-quantity">Cantidad:</label>
-                <input type="number" id="add-quantity" min="1" required>
-                <button type="submit">Añadir Libro</button>
-            </form>
-            <p id="add-book-message" class="message"></p>
+        <!-- Mensaje de Bienvenida Personalizado -->
+        <div
+          style="
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(
+              135deg,
+              var(--primary) 0%,
+              var(--accent) 100%
+            );
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+          "
+        >
+          <p style="margin: 0; font-size: 1.1rem; font-weight: 600">
+            ✨ Sistema listo para usar - Gestiona tu biblioteca de forma
+            eficiente
+          </p>
+        </div>
+      </section>
 
-            <h3>Actualizar/Eliminar Libro Existente</h3>
-            <input type="text" id="manage-book-search" placeholder="Buscar libro por ID para gestionar...">
-            <button id="manage-search-button">Buscar</button>
-            <p id="manage-search-message" class="message"></p>
+      <!-- Sistema de Pestañas para Administrador -->
+      <div id="admin-tabs-container" style="display: none; margin-bottom: 30px">
+        <div class="admin-tabs">
+          <button class="tab-btn active" onclick="switchAdminTab('catalog')">
+            <i class="fas fa-book"></i> Catálogo de Libros
+          </button>
+          <button class="tab-btn" onclick="switchAdminTab('inventory')">
+            <i class="fas fa-tools"></i> Panel de Gestión
+          </button>
+          <button class="tab-btn" onclick="switchAdminTab('dashboard')">
+            <i class="fas fa-chart-bar"></i> Dashboard
+          </button>
+          <button class="tab-btn" onclick="switchAdminTab('history')">
+            <i class="fas fa-history"></i> Historial
+          </button>
+          <button class="tab-btn" onclick="switchAdminTab('users')">
+            <i class="fas fa-users"></i> Usuarios
+          </button>
+        </div>
+      </div>
 
-            <div id="manage-book-details" style="display: none;">
-                <h4 id="manage-book-title-display"></h4>
-                <form id="update-book-form">
-                    <label for="update-bookId">ID del Libro:</label>
-                    <input type="text" id="update-bookId" readonly>
-                    <label for="update-title">Título:</label>
-                    <input type="text" id="update-title">
-                    <label for="update-author">Autor:</label>
-                    <input type="text" id="update-author">
-                    <label for="update-isbn">ISBN:</label>
-                    <input type="text" id="update-isbn">
-                    <label for="update-quantity">Cantidad Total:</label>
-                    <input type="number" id="update-quantity" min="0">
-                    <button type="submit">Actualizar Libro</button>
-                </form>
-                <button id="delete-book-button" class="delete-button">Eliminar Libro</button>
-                <p id="update-delete-message" class="message"></p>
+      <!-- PESTAÑA 1: Catálogo de Libros -->
+      <section id="admin-catalog-tab" class="card admin-tab-content">
+        <div class="admin-section">
+          <div class="admin-section-title">
+            <i class="fas fa-book"></i>
+            <span>Búsqueda y Filtros del Catálogo</span>
+          </div>
+          <!-- Barra de Búsqueda y Filtros -->
+          <div
+            style="
+              display: flex;
+              gap: 12px;
+              margin-bottom: 15px;
+              flex-wrap: wrap;
+            "
+          >
+            <!-- Búsqueda por texto -->
+            <input
+              type="text"
+              id="bookSearch"
+              placeholder="🔍 Buscar por título o autor..."
+              onkeyup="filterBooks()"
+              style="
+                padding: 12px 16px;
+                border-radius: 8px;
+                border: 2px solid #e2e8f0;
+                flex: 1;
+                min-width: 250px;
+                font-size: 0.95rem;
+                background: white;
+              "
+            />
+
+            <!-- Filtro por Categoría -->
+            <select
+              id="categoryFilter"
+              onchange="filterBooks()"
+              style="
+                padding: 12px 16px;
+                border-radius: 8px;
+                border: 2px solid #e2e8f0;
+                background: white;
+                cursor: pointer;
+                min-width: 200px;
+                font-size: 0.95rem;
+              "
+            >
+              <option value="">📂 Todas las Categorías</option>
+            </select>
+
+            <!-- Botón Limpiar Filtros -->
+            <button
+              onclick="clearFilters()"
+              style="
+                padding: 12px 20px;
+                border-radius: 8px;
+                border: 2px solid #e2e8f0;
+                background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+                cursor: pointer;
+                font-weight: 600;
+                color: #0f172a;
+                transition: all 0.2s ease;
+              "
+              onmouseover="
+                this.style.background =
+                  'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)'
+              "
+              onmouseout="
+                this.style.background =
+                  'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)'
+              "
+            >
+              🔄 Limpiar Filtros
+            </button>
+
+            <!-- Botón Descargar PDF del Catálogo -->
+            <button
+              onclick="downloadCatalogPDF()"
+              style="
+                padding: 12px 20px;
+                border-radius: 8px;
+                background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+                color: white;
+                cursor: pointer;
+                font-weight: 600;
+                border: none;
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+              "
+              onmouseover="
+                this.style.boxShadow = '0 6px 16px rgba(74, 144, 226, 0.5)'
+              "
+              onmouseout="
+                this.style.boxShadow = '0 4px 12px rgba(74, 144, 226, 0.3)'
+              "
+            >
+              📥 Descargar Catálogo
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Stock Disponible</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="book-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 40px">
+                  <i class="fas fa-spinner fa-spin"></i> Cargando catálogo...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PESTAÑA: Gestión de Usuarios (Solo Admin) -->
+      <section
+        id="admin-users-tab"
+        class="card admin-tab-content"
+        style="display: none"
+      >
+        <div style="margin-bottom: 25px">
+          <h2><i class="fas fa-users"></i> Gestión de Usuarios</h2>
+          <p style="color: var(--text-secondary); margin-top: 8px">
+            Administra los usuarios registrados. Edita datos, cambia roles o
+            bloquea cuentas.
+          </p>
+        </div>
+        <div
+          id="users-cards-container"
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+          "
+        >
+          <div
+            style="
+              grid-column: 1/-1;
+              text-align: center;
+              padding: 40px;
+              color: #94a3b8;
+            "
+          >
+            <i
+              class="fas fa-spinner fa-spin"
+              style="font-size: 2rem; margin-bottom: 12px"
+            ></i>
+            <p>Cargando usuarios...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PESTAÑA 2: Panel de Gestión de Inventario -->
+      <section
+        id="admin-inventory-tab"
+        class="card admin-tab-content"
+        style="display: none"
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+          "
+        >
+          <div>
+            <h2><i class="fas fa-tools"></i> Panel de Gestión de Inventario</h2>
+            <p style="color: var(--text-secondary); margin-top: 5px">
+              Administra el stock y los libros del catálogo
+            </p>
+          </div>
+          <button
+            class="btn-loan"
+            onclick="showAddModal()"
+            style="white-space: nowrap"
+          >
+            <i class="fas fa-plus"></i> Añadir Nuevo Libro
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Stock Total</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="admin-inventory-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PESTAÑA 4: Dashboard con Gráficos (Solo Admin) -->
+      <section
+        id="admin-dashboard-tab"
+        class="card admin-tab-content"
+        style="display: none"
+      >
+        <div style="margin-bottom: 30px">
+          <h2><i class="fas fa-chart-bar"></i> Dashboard de Análisis</h2>
+          <p style="color: var(--text-secondary); margin-top: 8px">
+            Visualiza métricas y estadísticas del sistema
+          </p>
+        </div>
+
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <!-- Gráfico de Libros Más Prestados -->
+          <div
+            style="
+              background: linear-gradient(135deg, white 0%, #f8fafc 100%);
+              padding: 24px;
+              border-radius: 12px;
+              box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+              border: 1px solid rgba(74, 144, 226, 0.15);
+            "
+          >
+            <h3 style="margin-bottom: 20px; color: #0f172a; font-weight: 700">
+              📚 Top Libros Prestados
+            </h3>
+            <canvas id="chart-top-books"></canvas>
+          </div>
+
+          <!-- Gráfico de Actividad Mensual -->
+          <div
+            style="
+              background: linear-gradient(135deg, white 0%, #f8fafc 100%);
+              padding: 24px;
+              border-radius: 12px;
+              box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+              border: 1px solid rgba(74, 144, 226, 0.15);
+            "
+          >
+            <h3 style="margin-bottom: 20px; color: #0f172a; font-weight: 700">
+              📈 Préstamos por Mes
+            </h3>
+            <canvas id="chart-monthly-loans"></canvas>
+          </div>
+
+          <!-- Gráfico de Estado del Inventario -->
+          <div
+            style="
+              background: linear-gradient(135deg, white 0%, #f8fafc 100%);
+              padding: 24px;
+              border-radius: 12px;
+              box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+              border: 1px solid rgba(74, 144, 226, 0.15);
+            "
+          >
+            <h3 style="margin-bottom: 20px; color: #0f172a; font-weight: 700">
+              📊 Disponibilidad de Libros
+            </h3>
+            <canvas id="chart-availability"></canvas>
+          </div>
+
+          <!-- Gráfico de Usuarios Más Activos -->
+          <div
+            style="
+              background: linear-gradient(135deg, white 0%, #f8fafc 100%);
+              padding: 24px;
+              border-radius: 12px;
+              box-shadow: 0 4px 15px rgba(15, 23, 42, 0.1);
+              border: 1px solid rgba(74, 144, 226, 0.15);
+            "
+          >
+            <h3 style="margin-bottom: 20px; color: #0f172a; font-weight: 700">
+              👥 Usuarios Activos
+            </h3>
+            <canvas id="chart-top-users"></canvas>
+          </div>
+
+          <!-- Estadísticas Rápidas -->
+          <div
+            style="
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              padding: 24px;
+              border-radius: 12px;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            "
+          >
+            <div style="margin-bottom: 20px">
+              <p
+                style="
+                  font-size: 0.85rem;
+                  opacity: 0.9;
+                  margin: 0;
+                  font-weight: 600;
+                "
+              >
+                Total de Préstamos
+              </p>
+              <p
+                id="stat-total-loans"
+                style="font-size: 2.5rem; font-weight: 800; margin: 8px 0 0 0"
+              >
+                -
+              </p>
             </div>
-        </section>
+            <div
+              style="
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+                padding-top: 20px;
+              "
+            >
+              <p
+                style="
+                  font-size: 0.85rem;
+                  opacity: 0.9;
+                  margin: 0;
+                  font-weight: 600;
+                "
+              >
+                Libros Disponibles
+              </p>
+              <p
+                id="stat-available-books"
+                style="font-size: 2.5rem; font-weight: 800; margin: 8px 0 0 0"
+              >
+                -
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PESTAÑA 3: Historial de Préstamos -->
+      <section
+        id="admin-history-tab"
+        class="card admin-tab-content"
+        style="display: none"
+      >
+        <div style="margin-bottom: 30px">
+          <h2><i class="fas fa-history"></i> Historial de Préstamos</h2>
+          <p style="color: var(--text-secondary); margin-top: 8px">
+            Registros de todas las transacciones del sistema
+          </p>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Libro</th>
+                <th>Usuario</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: Mis Préstamos para Usuarios -->
+      <section
+        id="my-loans-section"
+        class="card admin-tab-content"
+        style="display: none"
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2><i class="fas fa-hand-holding"></i> Mis Préstamos Activos</h2>
+          <div style="display: flex; gap: 10px">
+            <button
+              onclick="downloadLoansCSV()"
+              style="
+                padding: 8px 12px;
+                background: #10b981;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: 600;
+              "
+            >
+              📊 CSV
+            </button>
+            <button
+              onclick="downloadLoansPDF()"
+              style="
+                padding: 8px 12px;
+                background: #ef4444;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: 600;
+              "
+            >
+              📄 PDF
+            </button>
+          </div>
+        </div>
+        <p style="color: #64748b; margin-bottom: 20px">
+          Libros que tienes prestados actualmente. Plazo de devolución: 14 días
+          desde la fecha de préstamo.
+        </p>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Libro</th>
+                <th>Fecha Préstamo</th>
+                <th>Fecha Devolución</th>
+                <th>Días Restantes</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="my-loans-table-body">
+              <tr>
+                <td
+                  colspan="5"
+                  style="text-align: center; padding: 40px; color: #94a3b8"
+                >
+                  <i class="fas fa-inbox"></i><br />
+                  No tienes préstamos activos
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: Mis Favoritos -->
+      <section
+        id="my-favorites-section"
+        class="card admin-tab-content"
+        style="display: none"
+      >
+        <h2><i class="fas fa-heart"></i> Mis Favoritos</h2>
+        <p style="color: #64748b; margin-bottom: 20px">
+          Tus libros favoritos marcados para lectura futura.
+        </p>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Categoría</th>
+                <th>Disponibilidad</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="favorites-table-body">
+              <tr>
+                <td
+                  colspan="5"
+                  style="text-align: center; padding: 40px; color: #94a3b8"
+                >
+                  <i class="fas fa-bookmark"></i><br />
+                  No tienes favoritos guardados. ¡Comienza a añadir libros!
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
 
+    <div id="book-detail-modal" class="modal" style="display: none">
+      <div class="modal-content card">
+        <button
+          onclick="closeBookDetailModal()"
+          style="
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+          "
+        >
+          ✕
+        </button>
+        <h2 id="detail-title">Detalles del Libro</h2>
+        <div id="book-details-content"></div>
+      </div>
+    </div>
+
+    <div id="book-modal" class="modal" style="display: none">
+      <div
+        class="modal-content card"
+        style="
+          max-width: 650px;
+          border-radius: 12px;
+          box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
+          max-height: 90vh;
+          overflow-y: auto;
+        "
+      >
+        <div
+          style="
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+          "
+        >
+          <h2
+            id="modal-title"
+            style="
+              margin: 0;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              font-size: 1.4rem;
+            "
+          >
+            <i class="fas fa-book-plus"></i> Nuevo Libro
+          </h2>
+        </div>
+        <form
+          id="book-form"
+          enctype="multipart/form-data"
+          style="padding: 24px"
+        >
+          <!-- Fila 1: ID y Título -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+              margin-bottom: 16px;
+            "
+          >
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >ID del Libro</label
+              >
+              <input
+                type="text"
+                id="bookId"
+                required
+                style="
+                  padding: 10px 14px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Título</label
+              >
+              <input
+                type="text"
+                id="title"
+                required
+                style="
+                  padding: 10px 14px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+          </div>
+
+          <!-- Fila 2: Autor y ISBN -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+              margin-bottom: 16px;
+            "
+          >
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Autor</label
+              >
+              <input
+                type="text"
+                id="author"
+                required
+                style="
+                  padding: 10px 14px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >ISBN</label
+              >
+              <input
+                type="text"
+                id="isbn"
+                required
+                style="
+                  padding: 10px 14px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+          </div>
+
+          <!-- Fila 3: Categoría y Cantidad -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+              margin-bottom: 16px;
+            "
+          >
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Categoría</label
+              >
+              <select
+                id="bookCategory"
+                required
+                style="
+                  padding: 10px 14px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                  background: white;
+                "
+              >
+                <option value="">Selecciona una</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Cantidad</label
+              >
+              <input
+                type="number"
+                id="quantity"
+                min="1"
+                required
+                style="
+                  padding: 10px 14px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+          </div>
+
+          <!-- Nueva Categoría (oculta/compacta) -->
+          <div class="form-group" style="margin-bottom: 16px">
+            <label
+              style="
+                font-weight: 600;
+                color: #0f172a;
+                margin-bottom: 8px;
+                display: block;
+                font-size: 0.9rem;
+              "
+            >
+              <i
+                class="fas fa-plus-circle"
+                style="color: #4a90e2; margin-right: 6px"
+              ></i>
+              Nueva Categoría (opcional)
+            </label>
+            <input
+              type="text"
+              id="newCategory"
+              placeholder="Escribe aquí..."
+              style="
+                padding: 10px 14px;
+                border: 2px solid #f1f5f9;
+                border-radius: 8px;
+                width: 100%;
+                font-size: 0.95rem;
+                background: #f8fafc;
+              "
+            />
+          </div>
+
+          <!-- Descripción -->
+          <div class="form-group" style="margin-bottom: 16px">
+            <label
+              style="
+                font-weight: 600;
+                color: #0f172a;
+                margin-bottom: 8px;
+                display: block;
+              "
+              >Descripción</label
+            >
+            <textarea
+              id="description"
+              rows="2"
+              placeholder="Ingresa una descripción breve..."
+              style="
+                padding: 10px 14px;
+                border: 2px solid #e2e8f0;
+                border-radius: 8px;
+                width: 100%;
+                font-size: 0.95rem;
+                font-family: inherit;
+              "
+            ></textarea>
+          </div>
+
+          <!-- Imagen -->
+          <div class="form-group" style="margin-bottom: 20px">
+            <label
+              style="
+                font-weight: 600;
+                color: #0f172a;
+                margin-bottom: 8px;
+                display: block;
+              "
+              >Imagen de Portada</label
+            >
+            <input
+              type="file"
+              id="coverImage"
+              accept="image/*"
+              style="
+                padding: 10px 14px;
+                border: 2px dashed #e2e8f0;
+                border-radius: 8px;
+                width: 100%;
+                font-size: 0.9rem;
+                background: #f8fafc;
+              "
+            />
+            <small style="color: #64748b; font-size: 0.85rem"
+              >JPG, PNG (opcional)</small
+            >
+          </div>
+
+          <!-- Botones -->
+          <div
+            style="
+              display: flex;
+              gap: 12px;
+              padding-top: 16px;
+              border-top: 2px solid #e2e8f0;
+            "
+          >
+            <button
+              type="submit"
+              class="action-btn edit"
+              style="
+                flex: 1;
+                padding: 12px 20px;
+                font-size: 0.95rem;
+                justify-content: center;
+              "
+            >
+              <i class="fas fa-save"></i> Guardar Libro
+            </button>
+            <button
+              type="button"
+              onclick="closeModal()"
+              class="action-btn delete"
+              style="
+                flex: 1;
+                padding: 12px 20px;
+                font-size: 0.95rem;
+                justify-content: center;
+              "
+            >
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Edición Usuario -->
+    <div id="user-modal" class="modal" style="display: none">
+      <div
+        class="modal-content card"
+        style="
+          max-width: 700px;
+          border-radius: 12px;
+          box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
+        "
+      >
+        <div
+          style="
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px 12px 0 0;
+          "
+        >
+          <h2
+            id="user-modal-title"
+            style="margin: 0; display: flex; align-items: center; gap: 12px"
+          >
+            <i class="fas fa-user-edit"></i> Editar Usuario
+          </h2>
+        </div>
+        <div style="padding: 24px">
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+              margin-bottom: 20px;
+            "
+          >
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Usuario</label
+              >
+              <input
+                type="text"
+                id="edit-username"
+                disabled
+                style="
+                  background: #f1f5f9;
+                  cursor: not-allowed;
+                  font-weight: 600;
+                "
+              />
+            </div>
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Rol</label
+              >
+              <select
+                id="edit-role"
+                style="
+                  padding: 12px 16px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  font-size: 0.95rem;
+                "
+              >
+                <option value="user">👤 Usuario</option>
+                <option value="admin">🔑 Administrador</option>
+              </select>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+              margin-bottom: 20px;
+            "
+          >
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Nombre</label
+              >
+              <input
+                type="text"
+                id="edit-name"
+                style="
+                  padding: 12px 16px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Apellido</label
+              >
+              <input
+                type="text"
+                id="edit-lastname"
+                style="
+                  padding: 12px 16px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 16px;
+              margin-bottom: 20px;
+            "
+          >
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Correo</label
+              >
+              <input
+                type="email"
+                id="edit-email"
+                style="
+                  padding: 12px 16px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+            <div class="form-group">
+              <label
+                style="
+                  font-weight: 600;
+                  color: #0f172a;
+                  margin-bottom: 8px;
+                  display: block;
+                "
+                >Teléfono</label
+              >
+              <input
+                type="text"
+                id="edit-phone"
+                style="
+                  padding: 12px 16px;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  width: 100%;
+                  font-size: 0.95rem;
+                "
+              />
+            </div>
+          </div>
+
+          <div
+            style="
+              display: flex;
+              gap: 12px;
+              margin-top: 24px;
+              padding-top: 20px;
+              border-top: 2px solid #e2e8f0;
+            "
+          >
+            <button
+              onclick="saveUserChanges()"
+              class="action-btn edit"
+              style="
+                flex: 1;
+                padding: 12px 20px;
+                font-size: 0.95rem;
+                justify-content: center;
+              "
+            >
+              <i class="fas fa-save"></i> Guardar Cambios
+            </button>
+            <button
+              onclick="
+                toggleBlockCurrentUser(
+                  document.getElementById('edit-username').value,
+                )
+              "
+              id="btn-block-user"
+              class="action-btn block"
+              style="
+                flex: 1;
+                padding: 12px 20px;
+                font-size: 0.95rem;
+                justify-content: center;
+              "
+            >
+              <i class="fas fa-lock"></i> Bloquear Usuario
+            </button>
+            <button
+              onclick="closeUserModal()"
+              class="action-btn delete"
+              style="
+                flex: 1;
+                padding: 12px 20px;
+                font-size: 0.95rem;
+                justify-content: center;
+              "
+            >
+              <i class="fas fa-times"></i> Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <!-- Modal de Perfil de Usuario -->
+    <div id="profile-modal" class="modal" style="display: none">
+      <div
+        class="modal-content"
+        style="max-width: 600px; max-height: 80vh; overflow-y: auto"
+      >
+        <div class="modal-header">
+          <h2><i class="fas fa-user-circle"></i> Mi Perfil</h2>
+          <button
+            class="close-btn"
+            onclick="closeProfileModal()"
+            style="
+              background: none;
+              border: none;
+              font-size: 1.5rem;
+              cursor: pointer;
+            "
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body" style="padding: 20px">
+          <!-- Sección de Perfil Editable -->
+          <div style="margin-bottom: 25px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+              "
+            >
+              <h3 style="margin: 0">
+                <i class="fas fa-id-card"></i> Información Personal
+              </h3>
+              <button
+                id="btn-edit-profile"
+                onclick="toggleEditProfile(true)"
+                style="
+                  padding: 6px 12px;
+                  background: #3b82f6;
+                  color: white;
+                  border: none;
+                  border-radius: 5px;
+                  cursor: pointer;
+                  font-size: 0.9rem;
+                "
+              >
+                ✎ Editar
+              </button>
+            </div>
+
+            <!-- Vista Lectura -->
+            <div id="profile-view-mode">
+              <div
+                style="padding: 15px; background: #f8fafc; border-radius: 8px"
+              >
+                <p style="margin: 8px 0">
+                  <strong>👤 Usuario:</strong>
+                  <span id="profile-username"></span>
+                </p>
+                <p style="margin: 8px 0">
+                  <strong>📧 Email:</strong> <span id="profile-email">N/A</span>
+                </p>
+                <p style="margin: 8px 0">
+                  <strong>📝 Bio:</strong> <span id="profile-bio">Sin bio</span>
+                </p>
+                <p style="margin: 8px 0">
+                  <strong>👥 Rol:</strong> <span id="profile-role"></span>
+                </p>
+                <p style="margin: 8px 0">
+                  <strong>📅 Miembro desde:</strong>
+                  <span id="profile-date"></span>
+                </p>
+                <p style="margin: 8px 0">
+                  <strong>🎬 Géneros Favoritos:</strong>
+                  <span id="profile-genres">No especificados</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Formulario Edición -->
+            <div id="profile-edit-mode" style="display: none">
+              <div
+                style="padding: 15px; background: #f0f9ff; border-radius: 8px"
+              >
+                <div style="margin-bottom: 12px">
+                  <label
+                    style="display: block; margin-bottom: 5px; font-weight: 500"
+                    >Nombre:</label
+                  >
+                  <input
+                    type="text"
+                    id="edit-name"
+                    placeholder="Tu nombre"
+                    style="
+                      width: 100%;
+                      padding: 8px 12px;
+                      border: 1px solid #ddd;
+                      border-radius: 5px;
+                      box-sizing: border-box;
+                    "
+                  />
+                </div>
+                <div style="margin-bottom: 12px">
+                  <label
+                    style="display: block; margin-bottom: 5px; font-weight: 500"
+                    >Bio:</label
+                  >
+                  <textarea
+                    id="edit-bio"
+                    placeholder="Cuéntanos sobre ti..."
+                    style="
+                      width: 100%;
+                      padding: 8px 12px;
+                      border: 1px solid #ddd;
+                      border-radius: 5px;
+                      box-sizing: border-box;
+                      resize: vertical;
+                      height: 80px;
+                    "
+                  ></textarea>
+                </div>
+                <div style="margin-bottom: 12px">
+                  <label
+                    style="display: block; margin-bottom: 5px; font-weight: 500"
+                    >Foto de Perfil (URL):</label
+                  >
+                  <input
+                    type="url"
+                    id="edit-photo"
+                    placeholder="https://ejemplo.com/foto.jpg"
+                    style="
+                      width: 100%;
+                      padding: 8px 12px;
+                      border: 1px solid #ddd;
+                      border-radius: 5px;
+                      box-sizing: border-box;
+                    "
+                  />
+                </div>
+                <div style="margin-bottom: 15px">
+                  <label
+                    style="display: block; margin-bottom: 5px; font-weight: 500"
+                    >Géneros Favoritos (separados por coma):</label
+                  >
+                  <input
+                    type="text"
+                    id="edit-genres"
+                    placeholder="Ficción, Misterio, Ciencia Ficción"
+                    style="
+                      width: 100%;
+                      padding: 8px 12px;
+                      border: 1px solid #ddd;
+                      border-radius: 5px;
+                      box-sizing: border-box;
+                    "
+                  />
+                </div>
+                <div style="display: flex; gap: 10px">
+                  <button
+                    onclick="saveProfileChanges()"
+                    style="
+                      flex: 1;
+                      padding: 10px;
+                      background: #10b981;
+                      color: white;
+                      border: none;
+                      border-radius: 5px;
+                      cursor: pointer;
+                      font-weight: 600;
+                    "
+                  >
+                    ✓ Guardar
+                  </button>
+                  <button
+                    onclick="toggleEditProfile(false)"
+                    style="
+                      flex: 1;
+                      padding: 10px;
+                      background: #ef4444;
+                      color: white;
+                      border: none;
+                      border-radius: 5px;
+                      cursor: pointer;
+                      font-weight: 600;
+                    "
+                  >
+                    ✕ Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario Cambio de Contraseña -->
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 20px">
+            <h3 style="margin-top: 0">🔐 Cambiar Contraseña</h3>
+            <div style="margin-bottom: 15px">
+              <label
+                style="display: block; margin-bottom: 5px; font-weight: 500"
+                >Contraseña Actual:</label
+              >
+              <input
+                type="password"
+                id="current-password"
+                placeholder="Ingresa tu contraseña actual"
+                style="
+                  width: 100%;
+                  padding: 8px 12px;
+                  border: 1px solid #ddd;
+                  border-radius: 5px;
+                  box-sizing: border-box;
+                "
+              />
+            </div>
+            <div style="margin-bottom: 15px">
+              <label
+                style="display: block; margin-bottom: 5px; font-weight: 500"
+                >Nueva Contraseña:</label
+              >
+              <input
+                type="password"
+                id="new-password"
+                placeholder="Ingresa tu nueva contraseña"
+                style="
+                  width: 100%;
+                  padding: 8px 12px;
+                  border: 1px solid #ddd;
+                  border-radius: 5px;
+                  box-sizing: border-box;
+                "
+              />
+            </div>
+            <div style="margin-bottom: 20px">
+              <label
+                style="display: block; margin-bottom: 5px; font-weight: 500"
+                >Confirmar Nueva Contraseña:</label
+              >
+              <input
+                type="password"
+                id="confirm-password"
+                placeholder="Confirma tu nueva contraseña"
+                style="
+                  width: 100%;
+                  padding: 8px 12px;
+                  border: 1px solid #ddd;
+                  border-radius: 5px;
+                  box-sizing: border-box;
+                "
+              />
+            </div>
+            <button
+              onclick="changePassword()"
+              style="
+                width: 100%;
+                padding: 10px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s;
+              "
+              onmouseover="this.opacity = '0.9'"
+              onmouseout="this.opacity = '1'"
+            >
+              Guardar Nueva Contraseña
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <footer>
-        <p>&copy; 2025 Biblioteca Virtual. Todos los derechos reservados.</p>
+      <p>
+        &copy; 2026 Biblioteca Virtual, SENA. Todos los derechos reservados.
+      </p>
     </footer>
 
+    <script src="js/toast.js"></script>
     <script src="js/app.js"></script>
-</body>
+  </body>
 </html>

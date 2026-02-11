@@ -1,169 +1,251 @@
-// server/api/bookController.js
-const Book = require("../models/bookModel");
+// server/api/bookController.js - Versión MongoDB
+const Book = require("../models/Book");
+const Loan = require("../models/Loan");
 
-// Simulación de una base de datos en memoria
-/**
- * @type {Book[]}
- */
-let books = [
-  new Book(
-    "B001",
-    "Cien Años de Soledad",
-    "Gabriel García Márquez",
-    "978-0307474728",
-    5
-  ),
-  new Book(
-    "B002",
-    "El Principito",
-    "Antoine de Saint-Exupéry",
-    "978-0156013926",
-    3
-  ),
-  new Book("B003", "1984", "George Orwell", "978-0451524935", 7),
-];
-
-/**
- * @namespace bookController
- * @description Handles all business logic related to books.
- */
 const bookController = {
-  /**
-   * Retrieves all books.
-   * @param {object} req - The request object.
-   * @param {object} res - The response object.
-   */
-  getAllBooks: (req, res) => {
-    // Consulta (Read)
-    res.status(200).json(books);
-  },
-
-  /**
-   * Retrieves a book by its ID.
-   * @param {object} req - The request object containing bookId in params.
-   * @param {object} res - The response object.
-   */
-  getBookById: (req, res) => {
-    // Consulta (Read)
-    const { bookId } = req.params;
-    const foundBook = books.find((book) => book.bookId === bookId);
-    if (foundBook) {
-      res.status(200).json(foundBook);
-    } else {
-      res.status(404).json({ message: "Book not found" });
+  getAllBooks: async (req, res) => {
+    try {
+      const books = await Book.find();
+      res.json(books);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
   },
 
-  /**
-   * Adds a new book to the inventory.
-   * @param {object} req - The request object containing book data in body.
-   * @param {object} res - The response object.
-   */
-  addBook: (req, res) => {
-    // Inserción (Create)
-    const { bookId, title, author, isbn, quantity } = req.body;
-    if (!bookId || !title || !author || !isbn || !quantity) {
-      return res.status(400).json({ message: "All fields are required" });
+  getLoanHistory: async (req, res) => {
+    try {
+      const loans = await Loan.find().sort({ date: -1 });
+      res.json(loans);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-    if (books.some((book) => book.bookId === bookId)) {
-      return res
-        .status(409)
-        .json({ message: "Book with this ID already exists" });
-    }
-    const newBook = new Book(bookId, title, author, isbn, quantity);
-    books.push(newBook);
-    res.status(201).json({ message: "Book added successfully", book: newBook });
   },
 
-  /**
-   * Updates an existing book.
-   * @param {object} req - The request object containing bookId in params and updated data in body.
-   * @param {object} res - The response object.
-   */
-  updateBook: (req, res) => {
-    // Actualización (Update)
-    const { bookId } = req.params;
-    const { title, author, isbn, quantity } = req.body;
-    const bookIndex = books.findIndex((book) => book.bookId === bookId);
+  addBook: async (req, res) => {
+    try {
+      let coverImage = "";
 
-    if (bookIndex !== -1) {
-      const currentBook = books[bookIndex];
-      currentBook.title = title || currentBook.title;
-      currentBook.author = author || currentBook.author;
-      currentBook.isbn = isbn || currentBook.isbn;
-
-      if (quantity !== undefined && quantity >= 0) {
-        // Ajustar availableCopies si la cantidad total cambia
-        const quantityDifference = quantity - currentBook.quantity;
-        currentBook.quantity = quantity;
-        currentBook.availableCopies += quantityDifference;
-        if (currentBook.availableCopies < 0) currentBook.availableCopies = 0; // Evitar negativos
-        currentBook.isAvailable = currentBook.availableCopies > 0;
+      if (
+        req.files &&
+        req.files.coverImage &&
+        req.files.coverImage.length > 0
+      ) {
+        coverImage = `/uploads/${req.files.coverImage[0].filename}`;
       }
 
-      res
-        .status(200)
-        .json({ message: "Book updated successfully", book: currentBook });
-    } else {
-      res.status(404).json({ message: "Book not found" });
+      const newBook = new Book({
+        bookId: req.body.bookId,
+        title: req.body.title,
+        author: req.body.author,
+        isbn: req.body.isbn || "",
+        quantity: parseInt(req.body.quantity),
+        availableCopies: parseInt(req.body.quantity),
+        isAvailable: true,
+        description: req.body.description || "",
+        coverImage: coverImage,
+        category: req.body.category || "Sin categoría",
+      });
+
+      await newBook.save();
+      res.status(201).json(newBook);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
   },
 
-  /**
-   * Deletes a book from the inventory.
-   * @param {object} req - The request object containing bookId in params.
-   * @param {object} res - The response object.
-   */
-  deleteBook: (req, res) => {
-    // Eliminación (Delete)
-    const { bookId } = req.params;
-    const initialLength = books.length;
-    books = books.filter((book) => book.bookId !== bookId);
+  updateBook: async (req, res) => {
+    try {
+      const { bookId } = req.params;
+      const { title, author, isbn, quantity, description, category } = req.body;
 
-    if (books.length < initialLength) {
-      res.status(200).json({ message: "Book deleted successfully" });
-    } else {
-      res.status(404).json({ message: "Book not found" });
+      const book = await Book.findOne({ bookId });
+
+      if (!book) {
+        return res.status(404).json({ message: "Libro no encontrado" });
+      }
+
+      const oldQuantity = book.quantity;
+      const newQuantity = parseInt(quantity) || book.quantity;
+      const difference = newQuantity - oldQuantity;
+
+      if (title) book.title = title;
+      if (author) book.author = author;
+      if (isbn) book.isbn = isbn;
+      if (description) book.description = description;
+      if (category) book.category = category;
+
+      // Actualizar cantidad
+      if (!isNaN(newQuantity)) {
+        book.quantity = newQuantity;
+        book.availableCopies = Math.max(0, book.availableCopies + difference);
+        book.isAvailable = book.availableCopies > 0;
+      }
+
+      // Actualizar imagen si existe
+      if (
+        req.files &&
+        req.files.coverImage &&
+        req.files.coverImage.length > 0
+      ) {
+        book.coverImage = `/uploads/${req.files.coverImage[0].filename}`;
+      }
+
+      await book.save();
+      res.json(book);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
   },
 
-  /**
-   * Handles the loaning of a book.
-   * @param {object} req - The request object containing bookId in params.
-   * @param {object} res - The response object.
-   */
-  loanBook: (req, res) => {
-    // Prestar Libro
-    const { bookId } = req.params;
-    const book = books.find((b) => b.bookId === bookId);
-
-    if (!book) {
-      return res.status(404).json({ message: "Book not found" });
-    }
-
-    if (book.loanBook()) {
-      res.status(200).json({ message: "Book loaned successfully", book });
-    } else {
-      res.status(400).json({ message: "No copies available for loan" });
+  deleteBook: async (req, res) => {
+    try {
+      const { bookId } = req.params;
+      await Book.deleteOne({ bookId });
+      res.json({ message: "Libro eliminado" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
   },
 
-  /**
-   * Handles the returning of a book.
-   * @param {object} req - The request object containing bookId in params.
-   * @param {object} res - The response object.
-   */
-  returnBook: (req, res) => {
-    // Devolver Libro
-    const { bookId } = req.params;
-    const book = books.find((b) => b.bookId === bookId);
+  loanBook: async (req, res) => {
+    try {
+      const { bookId } = req.params;
+      const { username } = req.body;
+      const MAX_LOANS = 5;
 
-    if (!book) {
-      return res.status(404).json({ message: "Book not found" });
+      // Verificar límite de préstamos activos
+      const activeLoans = await Loan.countDocuments({
+        username,
+        returned: false,
+      });
+
+      if (activeLoans >= MAX_LOANS) {
+        return res.status(400).json({
+          message: `Has alcanzado el límite de ${MAX_LOANS} préstamos activos. Devuelve algunos libros primero.`,
+          currentLoans: activeLoans,
+          maxLoans: MAX_LOANS,
+        });
+      }
+
+      // Buscar y actualizar el libro
+      const book = await Book.findOne({ bookId });
+
+      if (!book || !book.isAvailable) {
+        return res.status(400).json({ message: "Libro no disponible" });
+      }
+
+      // Crear registro de préstamo
+      const loan = new Loan({
+        username: username || "Usuario",
+        bookId: book.bookId,
+        bookTitle: book.title,
+        date: new Date(),
+        returned: false,
+        status: "Préstamo",
+      });
+
+      await loan.save();
+
+      // Actualizar disponibilidad del libro
+      book.availableCopies -= 1;
+      book.isAvailable = book.availableCopies > 0;
+      await book.save();
+
+      res.json({ message: "Libro prestado", book });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
+  },
 
-    book.returnBook();
-    res.status(200).json({ message: "Book returned successfully", book });
+  returnBook: async (req, res) => {
+    try {
+      const { username } = req.body;
+      const { bookId } = req.params;
+
+      if (!username) {
+        return res.status(400).json({ message: "Usuario no proporcionado" });
+      }
+
+      // Buscar préstamo activo
+      const loan = await Loan.findOne({
+        bookId,
+        username,
+        returned: false,
+      }).sort({ date: -1 });
+
+      if (!loan) {
+        return res.status(400).json({
+          message: "No tienes un préstamo activo de este libro",
+        });
+      }
+
+      // Marcar como devuelto
+      loan.returned = true;
+      loan.returnDate = new Date();
+      loan.status = "Devolución";
+      await loan.save();
+
+      // Actualizar disponibilidad del libro
+      const book = await Book.findOne({ bookId });
+      if (book) {
+        book.availableCopies += 1;
+        book.isAvailable = true;
+        await book.save();
+      }
+
+      res.json({ message: "Libro devuelto" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  getUserLoans: async (req, res) => {
+    try {
+      const { username } = req.params;
+
+      // Obtener préstamos activos (no devueltos)
+      const userLoans = await Loan.find({
+        username,
+        returned: false,
+      }).sort({ date: -1 });
+
+      res.json(userLoans);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  getUserLoanHistory: async (req, res) => {
+    try {
+      const { username } = req.params;
+
+      // Obtener historial completo del usuario
+      const userHistory = await Loan.find({ username }).sort({ date: -1 });
+
+      res.json(userHistory);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  logHistory: async (req, res) => {
+    try {
+      const { bookId, bookTitle, username, date, status } = req.body;
+
+      const loan = new Loan({
+        bookId: bookId || null,
+        bookTitle,
+        username,
+        date: date || new Date(),
+        returned: status === "Devolución",
+        status: status || "Acción",
+      });
+
+      await loan.save();
+      res.status(201).json({ message: "Registro agregado al historial" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   },
 };
 

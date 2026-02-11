@@ -1,34 +1,27 @@
-// server/routes/bookRoutes.js
 const express = require("express");
 const router = express.Router();
 const bookController = require("../api/bookController");
 
-console.log("DEBUG: Tipo de bookController:", typeof bookController);
-console.log(
-  "DEBUG: Tipo de bookController.getAllBooks:",
-  typeof bookController.getAllBooks
-);
+// Rutas base
+router.get("/", bookController.getAllBooks);
 
-/**
- * @namespace bookRoutes
- * @description Defines API routes for book management.
- */
+// Esta es la ruta que causaba el error si no estaba bien definida
+router.get("/history", bookController.getLoanHistory);
 
-// Rutas para consultar libros (GET)
-router.get("/books", bookController.getAllBooks);
-router.get("/books/:bookId", bookController.getBookById);
+// Rutas de usuario individual
+router.get("/user/:username/loans", bookController.getUserLoans);
+router.get("/user/:username/history", bookController.getUserLoanHistory);
 
-// Ruta para añadir un nuevo libro (POST - Inserción)
-router.post("/books", bookController.addBook);
+// Rutas de gestión de libros
+router.post("/", bookController.addBook);
+router.put("/:bookId", bookController.updateBook);
+router.delete("/:bookId", bookController.deleteBook);
 
-// Ruta para actualizar un libro (PUT - Actualización)
-router.put("/books/:bookId", bookController.updateBook);
+// Rutas de préstamos y devoluciones
+router.post("/:bookId/loan", bookController.loanBook);
+router.post("/:bookId/return", bookController.returnBook);
 
-// Ruta para eliminar un libro (DELETE - Eliminación)
-router.delete("/books/:bookId", bookController.deleteBook);
-
-// Rutas para prestar y devolver libros
-router.post("/books/:bookId/loan", bookController.loanBook);
-router.post("/books/:bookId/return", bookController.returnBook);
+// Ruta para agregar registros al historial
+router.post("/history/log", bookController.logHistory);
 
 module.exports = router;

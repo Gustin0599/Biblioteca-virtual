@@ -13,8 +13,19 @@ class Book {
    * @param {string} isbn - The ISBN of the book.
    * @param {number} quantity - The number of available copies.
    * @param {boolean} isAvailable - Indicates if the book is currently available for loan.
+   * @param {string} description - Description of the book.
+   * @param {string} coverImage - URL of the book cover image.
    */
-  constructor(bookId, title, author, isbn, quantity, isAvailable = true) {
+  constructor(
+    bookId,
+    title,
+    author,
+    isbn,
+    quantity,
+    isAvailable = true,
+    description = "",
+    coverImage = "",
+  ) {
     this.bookId = bookId;
     this.title = title;
     this.author = author;
@@ -22,6 +33,8 @@ class Book {
     this.quantity = quantity;
     this.availableCopies = quantity; // Inicialmente, todas las copias están disponibles
     this.isAvailable = isAvailable;
+    this.description = description;
+    this.coverImage = coverImage;
   }
 
   /**

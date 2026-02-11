@@ -1,0 +1,57 @@
+[
+  {
+    "username": "admin",
+    "password": "$2b$10$JR1pGjs.OjfFX6p66Dr/FuLnlvpHIGWgjlqOwyEFmrlwklUDfZ7C.",
+    "role": "admin",
+    "name": "Administrador Principal"
+  },
+  {
+    "username": "usuario1",
+    "password": "$2b$10$iALobDDKQihHqIoaz.dD8OtoFsabzjtfxWPaUi7fUzHG.AThEL6RS",
+    "role": "user",
+    "name": "Juan",
+    "lastName": " Pérez",
+    "phone": "3117330741",
+    "email": "juanpe@gmail.com"
+  },
+  {
+    "username": "viviana",
+    "password": "$2b$10$2Sxg1O9M7LRChlyZDneC7u1QsoXYtLjQc4FfJeRZseuAkr.0BQEPO",
+    "role": "user",
+    "name": "Viviana",
+    "lastName": "Tumiña",
+    "phone": "3215655787",
+    "email": "vivianatu@gmail.com",
+    "blocked": false
+  },
+  {
+    "username": "gunter",
+    "password": "$2b$10$Ncd0k47kBdBlpSz5C9d5F.ZBc5XeFXGKwI4D7AzLrQrOGPHBVtZQS",
+    "role": "user",
+    "name": "Gunter",
+    "lastName": "Gravini",
+    "phone": "3145268795",
+    "email": "guntergra@gmail.com",
+    "blocked": false
+  },
+  {
+    "username": "camilogus",
+    "password": "$2b$10$vRL4e8qKobkWyCmf/AOgH.aui4KngH4cBW84V.pMI.YX97zDpPhda",
+    "role": "user",
+    "name": "Camilo",
+    "lastName": "Gustin",
+    "phone": "3128267790",
+    "email": "juanka7251@gmail.com",
+    "blocked": false
+  },
+  {
+    "username": "adso",
+    "password": "$2b$10$CJ0ZMYxbRC2xiOOvcEWaquK3RULusLL3Cw5uCOowz/bZgqIa2xSZ2",
+    "role": "user",
+    "name": "Sena",
+    "lastName": "ADSO",
+    "phone": "3215687821",
+    "email": "sena2025@sena.edu.co",
+    "blocked": false
+  }
+]
