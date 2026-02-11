@@ -9,6 +9,8 @@ const connectDB = require("./config/mongodb");
 connectDB();
 
 app.use(express.json());
+
+// Servir archivos estáticos desde public
 app.use(express.static(path.join(__dirname, "../public")));
 
 // Configurar multer para guardar imágenes
@@ -47,6 +49,16 @@ app.post("/api/register", authController.register);
 app.get("/api/users", authController.getUsers);
 app.put("/api/users/:username", authController.updateUser);
 app.post("/api/users/:username/block", authController.blockUser);
+
+// Ruta para servir login.html explícitamente
+app.get("/login.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/login.html"));
+});
+
+// Para todas las demás rutas, servir index.html (SPA)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"));
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Servidor en http://localhost:${PORT}`));
