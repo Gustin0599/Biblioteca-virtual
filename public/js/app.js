@@ -233,7 +233,7 @@ function updateWelcomeStats() {
   }
 
   // Para usuarios: mostrar progreso (libros en historial vs total disponibles)
-  if (!isAdmin && userBooksReadElement) {
+  if (!isAdmin && userBooksReadElement && state.currentUser) {
     fetch(`${API_URL}/history`)
       .then((res) => res.json())
       .then((history) => {
