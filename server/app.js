@@ -9,12 +9,11 @@ const Book = require("./models/Book");
 const User = require("./models/User");
 const Loan = require("./models/Loan");
 
-// Conectar a MongoDB
-connectDB();
-
 // Auto-seed al iniciar si las colecciones están vacías
 async function autoSeed() {
   try {
+    console.log("⏳ Verificando datos en MongoDB...");
+
     const booksCount = await Book.countDocuments();
     const usersCount = await User.countDocuments();
 
@@ -78,14 +77,36 @@ async function autoSeed() {
           `✅ Cargados ${loansToInsert.length} registros de historial`,
         );
       }
+    } else {
+      console.log(
+        `📊 Base de datos lista: ${booksCount} libros, ${usersCount} usuarios`,
+      );
     }
   } catch (err) {
     console.error("⚠️ Error en auto-seed:", err.message);
+    throw err;
   }
 }
 
-// Ejecutar seed al iniciar
-autoSeed();
+// Inicializar servidor
+async function startServer() {
+  try {
+    console.log("🔌 Conectando a MongoDB...");
+    await connectDB();
+    console.log("✅ Conectado a MongoDB");
+
+    await autoSeed();
+    console.log("✅ Base de datos lista");
+
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () =>
+      console.log(`✅ Servidor en http://localhost:${PORT}`),
+    );
+  } catch (err) {
+    console.error("❌ Error al iniciar servidor:", err.message);
+    process.exit(1);
+  }
+}
 
 app.use(express.json());
 
@@ -125,6 +146,9 @@ app.post("/api/register", authController.register);
 app.get("/api/users", authController.getUsers);
 app.put("/api/users/:username", authController.updateUser);
 app.post("/api/users/:username/block", authController.blockUser);
+
+// Conectar y arrancar
+startServer();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Servidor en http://localhost:${PORT}`));
