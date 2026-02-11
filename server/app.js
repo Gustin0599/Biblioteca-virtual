@@ -149,6 +149,3 @@ app.post("/api/users/:username/block", authController.blockUser);
 
 // Conectar y arrancar
 startServer();
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Servidor en http://localhost:${PORT}`));
