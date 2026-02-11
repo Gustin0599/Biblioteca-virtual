@@ -1,18 +1,17 @@
 <!doctype html>
 <html lang="es">
   <head>
-    <script>
-      // Redirigir al login si no hay usuario autenticado (se ejecuta antes de cargar la página)
-      if (!localStorage.getItem("user")) {
-        window.location.href = "/login.html";
-      }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Biblioteca Virtual | Sistema de Gestión</title>
+    <script>
+      // Verificar autenticación ANTES de cargar cualquier cosa
+      const user = localStorage.getItem("user");
+      if (!user) {
+        // Redirigir al login inmediatamente sin cargar la página
+        document.location.replace("/login.html");
+      }
+    </script>
     <link rel="stylesheet" href="css/style.css" />
     <link
       rel="stylesheet"
@@ -1647,6 +1646,9 @@
       </p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="js/toast.js"></script>
     <script src="js/app.js"></script>
   </body>

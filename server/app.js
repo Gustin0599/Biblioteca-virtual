@@ -111,21 +111,34 @@ async function autoSeed() {
 
 // Inicializar servidor
 async function startServer() {
+  const PORT = process.env.PORT || 3000;
+
   try {
     console.log("🔌 Conectando a MongoDB...");
     await connectDB();
     console.log("✅ Conectado a MongoDB");
 
-    await autoSeed();
-    console.log("✅ Base de datos lista");
+    // Auto-seed sin bloquear si falla
+    try {
+      await autoSeed();
+      console.log("✅ Base de datos lista");
+    } catch (seedErr) {
+      console.warn(
+        "⚠️ Error en auto-seed (continuando sin fallar):",
+        seedErr.message,
+      );
+    }
 
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () =>
-      console.log(`✅ Servidor en http://localhost:${PORT}`),
-    );
+    app.listen(PORT, () => {
+      console.log(`✅ Servidor en puerto ${PORT}`);
+    });
   } catch (err) {
-    console.error("❌ Error al iniciar servidor:", err.message);
-    process.exit(1);
+    console.error("❌ Error crítico al iniciar:", err.message);
+    // Intentar iniciar de todas formas
+    console.log("Iniciando servidor sin MongoDB...");
+    app.listen(PORT, () => {
+      console.log(`✅ Servidor en puerto ${PORT} (sin BD)`);
+    });
   }
 }
 
@@ -152,6 +165,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 app.use("/uploads", express.static(uploadsDir));
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", timestamp: new Date() });
+});
 
 const bookRoutes = require("./routes/bookRoutes");
 // Importamos el controlador de autenticación
