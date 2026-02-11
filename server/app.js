@@ -109,40 +109,42 @@ async function autoSeed() {
   }
 }
 
-// Inicializar servidor
-async function startServer() {
-  const PORT = process.env.PORT || 3000;
+let initPromise;
 
-  try {
-    console.log("🔌 Conectando a MongoDB...");
-    await connectDB();
-    console.log("✅ Conectado a MongoDB");
+// Inicializa MongoDB una sola vez (útil para entorno serverless en Vercel)
+async function initServer() {
+  if (!initPromise) {
+    initPromise = (async () => {
+      try {
+        console.log("🔌 Conectando a MongoDB...");
+        await connectDB();
+        console.log("✅ Conectado a MongoDB");
 
-    // Auto-seed sin bloquear si falla
-    try {
-      await autoSeed();
-      console.log("✅ Base de datos lista");
-    } catch (seedErr) {
-      console.warn(
-        "⚠️ Error en auto-seed (continuando sin fallar):",
-        seedErr.message,
-      );
-    }
-
-    app.listen(PORT, () => {
-      console.log(`✅ Servidor en puerto ${PORT}`);
-    });
-  } catch (err) {
-    console.error("❌ Error crítico al iniciar:", err.message);
-    // Intentar iniciar de todas formas
-    console.log("Iniciando servidor sin MongoDB...");
-    app.listen(PORT, () => {
-      console.log(`✅ Servidor en puerto ${PORT} (sin BD)`);
-    });
+        try {
+          await autoSeed();
+          console.log("✅ Base de datos lista");
+        } catch (seedErr) {
+          console.warn(
+            "⚠️ Error en auto-seed (continuando sin fallar):",
+            seedErr.message,
+          );
+        }
+      } catch (err) {
+        console.error("⚠️ Error al inicializar MongoDB:", err.message);
+      }
+    })();
   }
+
+  return initPromise;
 }
 
 app.use(express.json());
+
+// Asegura conexión a MongoDB antes de cada request
+app.use(async (req, res, next) => {
+  await initServer();
+  next();
+});
 
 // Configurar multer para guardar imágenes
 const uploadsDir = path.join(__dirname, "../public/uploads");
@@ -186,5 +188,15 @@ app.get("/api/users", authController.getUsers);
 app.put("/api/users/:username", authController.updateUser);
 app.post("/api/users/:username/block", authController.blockUser);
 
-// Conectar y arrancar
-startServer();
+// Export para Vercel (@vercel/node)
+module.exports = app;
+
+// Levantar servidor solo en ejecución local
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  initServer().finally(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Servidor en puerto ${PORT}`);
+    });
+  });
+}

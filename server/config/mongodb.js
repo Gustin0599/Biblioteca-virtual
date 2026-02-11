@@ -11,7 +11,8 @@ const connectDB = async () => {
 
   try {
     const mongoURI =
-      process.env.MONGODB_URI || "mongodb://localhost:27017/biblioteca_virtual";
+      process.env.MONGODB_URI ||
+      "mongodb+srv://biblioteca_user:Sena.Biblioteca2026@cluster0.gmvpku0.mongodb.net/biblioteca_virtual?retryWrites=true&w=majority";
 
     if (!mongoURI) {
       throw new Error("MONGODB_URI no está definido en variables de entorno");
