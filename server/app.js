@@ -5,6 +5,7 @@ const multer = require("multer");
 const fs = require("fs");
 require("dotenv").config();
 const connectDB = require("./config/mongodb");
+const seedData = require("./config/seedData");
 const Book = require("./models/Book");
 const User = require("./models/User");
 const Loan = require("./models/Loan");
@@ -24,8 +25,30 @@ async function autoSeed() {
       const usersPath = path.join(__dirname, "./data/users.json");
       const loansPath = path.join(__dirname, "./data/loans.json");
 
-      if (booksCount === 0 && fs.existsSync(booksPath)) {
-        const books = JSON.parse(fs.readFileSync(booksPath, "utf8"));
+      let books = [];
+      let users = [];
+      let loans = [];
+
+      // Intentar cargar de archivos JSON, si no existen usar seedData
+      if (fs.existsSync(booksPath)) {
+        books = JSON.parse(fs.readFileSync(booksPath, "utf8"));
+      } else {
+        books = seedData.books;
+      }
+
+      if (fs.existsSync(usersPath)) {
+        users = JSON.parse(fs.readFileSync(usersPath, "utf8"));
+      } else {
+        users = seedData.users;
+      }
+
+      if (fs.existsSync(loansPath)) {
+        loans = JSON.parse(fs.readFileSync(loansPath, "utf8"));
+      } else {
+        loans = [];
+      }
+
+      if (booksCount === 0 && books.length > 0) {
         await Book.insertMany(
           books.map((b) => ({
             bookId: b.bookId,
@@ -44,8 +67,7 @@ async function autoSeed() {
         console.log(`✅ Cargados ${books.length} libros`);
       }
 
-      if (usersCount === 0 && fs.existsSync(usersPath)) {
-        const users = JSON.parse(fs.readFileSync(usersPath, "utf8"));
+      if (usersCount === 0 && users.length > 0) {
         const usersToInsert = users.map((u) => ({
           username: (u.username || "").toLowerCase(),
           password: u.password || "",
@@ -61,8 +83,7 @@ async function autoSeed() {
       }
 
       const loansCount = await Loan.countDocuments();
-      if (loansCount === 0 && fs.existsSync(loansPath)) {
-        const loans = JSON.parse(fs.readFileSync(loansPath, "utf8"));
+      if (loansCount === 0 && loans.length > 0) {
         const loansToInsert = loans.map((l) => ({
           username: (l.username || "").toLowerCase(),
           bookId: l.bookId || null,
