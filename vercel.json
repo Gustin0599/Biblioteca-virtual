@@ -8,7 +8,7 @@
     { "src": "/login.html", "dest": "/public/login.html" },
     { "src": "/health", "dest": "server/app.js" },
     { "src": "/api/(.*)", "dest": "server/app.js" },
-    { "src": "/uploads/(.*)", "dest": "/public/uploads/$1" },
+    { "src": "/uploads/(.*)", "dest": "server/app.js" },
     { "src": "/css/(.*)", "dest": "/public/css/$1" },
     { "src": "/js/(.*)", "dest": "/public/js/$1" },
     { "src": "/(.*)", "dest": "/public/index.html" }
