@@ -146,10 +146,16 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Configurar multer para guardar imágenes
-const uploadsDir = path.join(__dirname, "../public/uploads");
-if (!require("fs").existsSync(uploadsDir)) {
-  require("fs").mkdirSync(uploadsDir, { recursive: true });
+// Configurar carpeta de uploads compatible con Vercel Serverless
+const isVercel = !!process.env.VERCEL;
+const uploadsDir = isVercel
+  ? "/tmp/uploads"
+  : path.join(__dirname, "../public/uploads");
+
+try {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+} catch (err) {
+  console.warn("No se pudo crear uploadsDir:", err.message);
 }
 
 const storage = multer.diskStorage({
