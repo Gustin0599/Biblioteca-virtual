@@ -146,33 +146,17 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Configurar carpeta de uploads compatible con Vercel Serverless
-const isVercel = !!process.env.VERCEL;
-const uploadsDir = isVercel
-  ? "/tmp/uploads"
-  : path.join(__dirname, "../public/uploads");
-
-try {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-} catch (err) {
-  console.warn("No se pudo crear uploadsDir:", err.message);
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname),
-    );
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith("image/")) {
+      cb(null, true);
+      return;
+    }
+    cb(new Error("Solo se permiten archivos de imagen"));
   },
 });
-
-const upload = multer({ storage: storage });
-app.use("/uploads", express.static(uploadsDir));
 
 // Health check endpoint
 app.get("/health", (req, res) => {

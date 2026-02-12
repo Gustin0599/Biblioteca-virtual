@@ -2,6 +2,24 @@
 const Book = require("../models/Book");
 const Loan = require("../models/Loan");
 
+function buildCoverImageFromUpload(req) {
+  if (!req.files || !req.files.coverImage || req.files.coverImage.length === 0) {
+    return "";
+  }
+
+  const file = req.files.coverImage[0];
+
+  if (file.buffer && file.mimetype) {
+    return `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+  }
+
+  if (file.filename) {
+    return `/uploads/${file.filename}`;
+  }
+
+  return "";
+}
+
 const bookController = {
   getAllBooks: async (req, res) => {
     try {
@@ -23,15 +41,7 @@ const bookController = {
 
   addBook: async (req, res) => {
     try {
-      let coverImage = "";
-
-      if (
-        req.files &&
-        req.files.coverImage &&
-        req.files.coverImage.length > 0
-      ) {
-        coverImage = `/uploads/${req.files.coverImage[0].filename}`;
-      }
+      const coverImage = buildCoverImageFromUpload(req);
 
       const newBook = new Book({
         bookId: req.body.bookId,
@@ -82,12 +92,9 @@ const bookController = {
       }
 
       // Actualizar imagen si existe
-      if (
-        req.files &&
-        req.files.coverImage &&
-        req.files.coverImage.length > 0
-      ) {
-        book.coverImage = `/uploads/${req.files.coverImage[0].filename}`;
+      const coverImage = buildCoverImageFromUpload(req);
+      if (coverImage) {
+        book.coverImage = coverImage;
       }
 
       await book.save();
