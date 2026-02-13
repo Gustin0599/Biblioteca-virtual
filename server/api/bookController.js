@@ -20,10 +20,34 @@ function buildCoverImageFromUpload(req) {
   return "";
 }
 
+async function createHistoryEntry({
+  username,
+  bookId = "",
+  bookTitle = "N/A",
+  status,
+  returned = false,
+  returnDate = null,
+}) {
+  const entry = new Loan({
+    username: (username || "sistema").toLowerCase(),
+    bookId,
+    bookTitle,
+    status: status || "Acción",
+    date: new Date(),
+    returned,
+    returnDate,
+    isHistoryOnly: true,
+  });
+
+  await entry.save();
+}
+
 const bookController = {
   getAllBooks: async (req, res) => {
     try {
-      const books = await Book.find();
+      const books = await Book.find()
+        .collation({ locale: "en", numericOrdering: true })
+        .sort({ bookId: 1 });
       res.json(books);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -32,7 +56,7 @@ const bookController = {
 
   getLoanHistory: async (req, res) => {
     try {
-      const loans = await Loan.find().sort({ date: -1 });
+      const loans = await Loan.find().sort({ date: -1, createdAt: -1, _id: -1 });
       res.json(loans);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -57,6 +81,12 @@ const bookController = {
       });
 
       await newBook.save();
+      await createHistoryEntry({
+        username: req.body.username,
+        bookId: newBook.bookId,
+        bookTitle: newBook.title,
+        status: "Creación de Libro",
+      });
       res.status(201).json(newBook);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -98,6 +128,12 @@ const bookController = {
       }
 
       await book.save();
+      await createHistoryEntry({
+        username: req.body.username,
+        bookId: book.bookId,
+        bookTitle: book.title,
+        status: "Edición de Libro",
+      });
       res.json(book);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -107,7 +143,18 @@ const bookController = {
   deleteBook: async (req, res) => {
     try {
       const { bookId } = req.params;
-      await Book.deleteOne({ bookId });
+      const deletedBook = await Book.findOneAndDelete({ bookId });
+
+      if (!deletedBook) {
+        return res.status(404).json({ message: "Libro no encontrado" });
+      }
+
+      await createHistoryEntry({
+        username: req.body?.username,
+        bookId: deletedBook.bookId,
+        bookTitle: deletedBook.title,
+        status: "Eliminación de Libro",
+      });
       res.json({ message: "Libro eliminado" });
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -118,12 +165,15 @@ const bookController = {
     try {
       const { bookId } = req.params;
       const { username } = req.body;
+      const normalizedUsername = (username || "usuario").toLowerCase();
       const MAX_LOANS = 5;
 
       // Verificar límite de préstamos activos
       const activeLoans = await Loan.countDocuments({
-        username,
+        username: normalizedUsername,
+        status: "Préstamo",
         returned: false,
+        isHistoryOnly: { $ne: true },
       });
 
       if (activeLoans >= MAX_LOANS) {
@@ -143,7 +193,7 @@ const bookController = {
 
       // Crear registro de préstamo
       const loan = new Loan({
-        username: username || "Usuario",
+        username: normalizedUsername,
         bookId: book.bookId,
         bookTitle: book.title,
         date: new Date(),
@@ -152,6 +202,13 @@ const bookController = {
       });
 
       await loan.save();
+      await createHistoryEntry({
+        username: normalizedUsername,
+        bookId: book.bookId,
+        bookTitle: book.title,
+        status: "Préstamo",
+        returned: false,
+      });
 
       // Actualizar disponibilidad del libro
       book.availableCopies -= 1;
@@ -168,16 +225,19 @@ const bookController = {
     try {
       const { username } = req.body;
       const { bookId } = req.params;
+      const normalizedUsername = (username || "").toLowerCase();
 
-      if (!username) {
+      if (!normalizedUsername) {
         return res.status(400).json({ message: "Usuario no proporcionado" });
       }
 
       // Buscar préstamo activo
       const loan = await Loan.findOne({
         bookId,
-        username,
+        username: normalizedUsername,
+        status: "Préstamo",
         returned: false,
+        isHistoryOnly: { $ne: true },
       }).sort({ date: -1 });
 
       if (!loan) {
@@ -189,7 +249,6 @@ const bookController = {
       // Marcar como devuelto
       loan.returned = true;
       loan.returnDate = new Date();
-      loan.status = "Devolución";
       await loan.save();
 
       // Actualizar disponibilidad del libro
@@ -200,6 +259,15 @@ const bookController = {
         await book.save();
       }
 
+      await createHistoryEntry({
+        username: normalizedUsername,
+        bookId: loan.bookId,
+        bookTitle: loan.bookTitle,
+        status: "Devolución",
+        returned: true,
+        returnDate: new Date(),
+      });
+
       res.json({ message: "Libro devuelto" });
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -209,11 +277,14 @@ const bookController = {
   getUserLoans: async (req, res) => {
     try {
       const { username } = req.params;
+      const normalizedUsername = (username || "").toLowerCase();
 
       // Obtener préstamos activos (no devueltos)
       const userLoans = await Loan.find({
-        username,
+        username: normalizedUsername,
+        status: "Préstamo",
         returned: false,
+        isHistoryOnly: { $ne: true },
       }).sort({ date: -1 });
 
       res.json(userLoans);
@@ -225,9 +296,12 @@ const bookController = {
   getUserLoanHistory: async (req, res) => {
     try {
       const { username } = req.params;
+      const normalizedUsername = (username || "").toLowerCase();
 
       // Obtener historial completo del usuario
-      const userHistory = await Loan.find({ username }).sort({ date: -1 });
+      const userHistory = await Loan.find({ username: normalizedUsername }).sort({
+        date: -1,
+      });
 
       res.json(userHistory);
     } catch (error) {
@@ -237,18 +311,15 @@ const bookController = {
 
   logHistory: async (req, res) => {
     try {
-      const { bookId, bookTitle, username, date, status } = req.body;
-
-      const loan = new Loan({
-        bookId: bookId || null,
-        bookTitle,
+      const { bookId, bookTitle, username, status } = req.body;
+      await createHistoryEntry({
         username,
-        date: date || new Date(),
-        returned: status === "Devolución",
+        bookId: bookId || "",
+        bookTitle: bookTitle || "N/A",
         status: status || "Acción",
+        returned: status === "Devolución",
+        returnDate: status === "Devolución" ? new Date() : null,
       });
-
-      await loan.save();
       res.status(201).json({ message: "Registro agregado al historial" });
     } catch (error) {
       res.status(500).json({ message: error.message });

@@ -7,7 +7,7 @@ const loanSchema = new mongoose.Schema({
   },
   bookId: {
     type: String,
-    required: true,
+    default: "",
   },
   bookTitle: {
     type: String,
@@ -29,6 +29,10 @@ const loanSchema = new mongoose.Schema({
   returnDate: {
     type: Date,
     default: null,
+  },
+  isHistoryOnly: {
+    type: Boolean,
+    default: false,
   },
   createdAt: {
     type: Date,

@@ -8,6 +8,13 @@ const state = {
 
 const API_URL = "/api/books";
 
+function compareBookIdAsc(a, b) {
+  return String(a.bookId || "").localeCompare(String(b.bookId || ""), "es", {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initDarkMode();
   checkAuth();
@@ -45,6 +52,7 @@ async function loadBooks() {
   try {
     const response = await fetch(API_URL);
     state.books = await response.json();
+    state.books.sort(compareBookIdAsc);
     state.filteredBooks = [...state.books];
     renderBookTable();
     updateWelcomeStats();
@@ -177,7 +185,14 @@ async function loadHistory() {
 
     historyBody.innerHTML = history
       .map((log) => {
-        const color = log.status === "Préstamo" ? "#27ae60" : "#2980b9";
+        const statusColors = {
+          "Préstamo": "#27ae60",
+          "Devolución": "#2980b9",
+          "Creación de Libro": "#8b5cf6",
+          "Edición de Libro": "#f59e0b",
+          "Eliminación de Libro": "#ef4444",
+        };
+        const color = statusColors[log.status] || "#64748b";
         // Formatear fecha a formato legible (DD/MM/YYYY HH:MM)
         const dateObj = new Date(log.date);
         const formattedDate =
@@ -677,6 +692,7 @@ function setupEventListeners() {
       formData.append("quantity", quantity);
       formData.append("description", description);
       formData.append("category", category);
+      formData.append("username", state.currentUser?.username || "admin");
       if (coverImageFile) formData.append("coverImage", coverImageFile);
 
       const response = await fetch(isEdit ? `${API_URL}/${id}` : API_URL, {
@@ -701,20 +717,6 @@ function setupEventListeners() {
           </div>`,
           confirmButtonText: "Aceptar",
         });
-
-        // Agregar registro al historial si es edición y es administrador
-        if (isEdit && state.currentUser?.role === "admin") {
-          await fetch(`${API_URL}/history/log`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              bookTitle: title,
-              username: state.currentUser.username,
-              date: new Date().toLocaleString(),
-              status: "Edición de Libro",
-            }),
-          });
-        }
 
         closeModal();
         loadBooks();
@@ -749,7 +751,6 @@ function showUserCatalog() {
 }
 
 async function deleteBook(bookId) {
-  const book = state.books.find((b) => b.bookId === bookId);
   // TAMBIÉN PODEMOS USAR SWEETALERT PARA CONFIRMAR ELIMINACIÓN
   const result = await Swal.fire({
     title: "¿Estás seguro?",
@@ -763,21 +764,12 @@ async function deleteBook(bookId) {
   });
 
   if (result.isConfirmed) {
-    const res = await fetch(`${API_URL}/${bookId}`, { method: "DELETE" });
+    const res = await fetch(`${API_URL}/${bookId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: state.currentUser?.username || "admin" }),
+    });
     if (res.ok) {
-      // Agregar registro al historial si es administrador
-      if (state.currentUser?.role === "admin" && book) {
-        await fetch(`${API_URL}/history/log`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            bookTitle: book.title,
-            username: state.currentUser.username,
-            date: new Date().toLocaleString(),
-            status: "Eliminación de Libro",
-          }),
-        });
-      }
       Swal.fire("Eliminado", "El libro ha sido borrado.", "success");
       loadBooks();
       if (state.currentUser?.role === "admin") loadHistory();
