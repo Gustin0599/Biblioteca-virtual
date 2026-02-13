@@ -73,11 +73,12 @@ const bookController = {
 
   getLoanHistory: async (req, res) => {
     try {
-      const loans = await Loan.find({ isHistoryOnly: true }).sort({
-        date: -1,
-        createdAt: -1,
-        _id: -1,
-      });
+      const loans = await Loan.find({
+        $or: [
+          { isHistoryOnly: true },
+          { status: "Préstamo", isHistoryOnly: { $ne: true } },
+        ],
+      }).sort({ date: -1, createdAt: -1, _id: -1 });
       res.json(loans);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -224,14 +225,6 @@ const bookController = {
       });
 
       await loan.save();
-
-      await createHistoryEntrySafe({
-        username: normalizedUsername,
-        bookId: book.bookId,
-        bookTitle: book.title,
-        status: "Préstamo",
-        returned: false,
-      });
 
       book.availableCopies -= 1;
       book.isAvailable = book.availableCopies > 0;
