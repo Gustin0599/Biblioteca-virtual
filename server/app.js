@@ -89,12 +89,14 @@ async function autoSeed() {
 
 let initPromise = null;
 let isInitialized = false;
+let lastInitError = null;
 
 async function initServer() {
   if (isInitialized) return;
 
   if (!initPromise) {
     initPromise = (async () => {
+      lastInitError = null;
       await connectDB();
 
       try {
@@ -107,6 +109,7 @@ async function initServer() {
     })().catch((err) => {
       initPromise = null;
       isInitialized = false;
+      lastInitError = err;
       throw err;
     });
   }
@@ -120,6 +123,7 @@ app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
     dbInitialized: isInitialized,
+    dbError: lastInitError ? lastInitError.message : null,
     timestamp: new Date(),
   });
 });
