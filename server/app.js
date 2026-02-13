@@ -1,26 +1,22 @@
-const express = require("express");
+﻿const express = require("express");
 const app = express();
 const path = require("path");
 const multer = require("multer");
 const fs = require("fs");
 require("dotenv").config();
+
 const connectDB = require("./config/mongodb");
 const seedData = require("./config/seedData");
 const Book = require("./models/Book");
 const User = require("./models/User");
 const Loan = require("./models/Loan");
 
-// Auto-seed al iniciar si las colecciones están vacías
 async function autoSeed() {
   try {
-    console.log("⏳ Verificando datos en MongoDB...");
-
     const booksCount = await Book.countDocuments();
     const usersCount = await User.countDocuments();
 
     if (booksCount === 0 || usersCount === 0) {
-      console.log("📚 Cargando datos iniciales...");
-
       const booksPath = path.join(__dirname, "./data/books.json");
       const usersPath = path.join(__dirname, "./data/users.json");
       const loansPath = path.join(__dirname, "./data/loans.json");
@@ -29,24 +25,15 @@ async function autoSeed() {
       let users = [];
       let loans = [];
 
-      // Intentar cargar de archivos JSON, si no existen usar seedData
-      if (fs.existsSync(booksPath)) {
-        books = JSON.parse(fs.readFileSync(booksPath, "utf8"));
-      } else {
-        books = seedData.books;
-      }
-
-      if (fs.existsSync(usersPath)) {
-        users = JSON.parse(fs.readFileSync(usersPath, "utf8"));
-      } else {
-        users = seedData.users;
-      }
-
-      if (fs.existsSync(loansPath)) {
-        loans = JSON.parse(fs.readFileSync(loansPath, "utf8"));
-      } else {
-        loans = [];
-      }
+      books = fs.existsSync(booksPath)
+        ? JSON.parse(fs.readFileSync(booksPath, "utf8"))
+        : seedData.books;
+      users = fs.existsSync(usersPath)
+        ? JSON.parse(fs.readFileSync(usersPath, "utf8"))
+        : seedData.users;
+      loans = fs.existsSync(loansPath)
+        ? JSON.parse(fs.readFileSync(loansPath, "utf8"))
+        : [];
 
       if (booksCount === 0 && books.length > 0) {
         await Book.insertMany(
@@ -57,14 +44,12 @@ async function autoSeed() {
             isbn: b.isbn || "",
             quantity: b.quantity || 1,
             availableCopies: b.availableCopies || b.quantity || 1,
-            isAvailable:
-              typeof b.isAvailable === "boolean" ? b.isAvailable : true,
+            isAvailable: typeof b.isAvailable === "boolean" ? b.isAvailable : true,
             description: b.description || "",
             coverImage: b.coverImage || "",
-            category: b.category || "Sin categoría",
+            category: b.category || "Sin categoria",
           })),
         );
-        console.log(`✅ Cargados ${books.length} libros`);
       }
 
       if (usersCount === 0 && users.length > 0) {
@@ -79,60 +64,51 @@ async function autoSeed() {
           blocked: !!u.blocked,
         }));
         await User.collection.insertMany(usersToInsert);
-        console.log(`✅ Cargados ${usersToInsert.length} usuarios`);
       }
 
       const loansCount = await Loan.countDocuments();
       if (loansCount === 0 && loans.length > 0) {
         const loansToInsert = loans.map((l) => ({
           username: (l.username || "").toLowerCase(),
-          bookId: l.bookId || null,
+          bookId: l.bookId || "",
           bookTitle: l.bookTitle || "",
           date: l.date ? new Date(l.date) : new Date(),
-          status: l.status || (l.returned ? "Devolución" : "Préstamo"),
-          returned: l.status === "Devolución" || !!l.returned,
+          status: l.status || (l.returned ? "Devolucion" : "Prestamo"),
+          returned: l.status === "Devolucion" || !!l.returned,
           returnDate: l.returnDate ? new Date(l.returnDate) : null,
+          isHistoryOnly: true,
         }));
         await Loan.insertMany(loansToInsert);
-        console.log(
-          `✅ Cargados ${loansToInsert.length} registros de historial`,
-        );
       }
-    } else {
-      console.log(
-        `📊 Base de datos lista: ${booksCount} libros, ${usersCount} usuarios`,
-      );
     }
   } catch (err) {
-    console.error("⚠️ Error en auto-seed:", err.message);
+    console.error("Error en auto-seed:", err.message);
     throw err;
   }
 }
 
-let initPromise;
+let initPromise = null;
+let isInitialized = false;
 
-// Inicializa MongoDB una sola vez (útil para entorno serverless en Vercel)
 async function initServer() {
+  if (isInitialized) return;
+
   if (!initPromise) {
     initPromise = (async () => {
-      try {
-        console.log("🔌 Conectando a MongoDB...");
-        await connectDB();
-        console.log("✅ Conectado a MongoDB");
+      await connectDB();
 
-        try {
-          await autoSeed();
-          console.log("✅ Base de datos lista");
-        } catch (seedErr) {
-          console.warn(
-            "⚠️ Error en auto-seed (continuando sin fallar):",
-            seedErr.message,
-          );
-        }
-      } catch (err) {
-        console.error("⚠️ Error al inicializar MongoDB:", err.message);
+      try {
+        await autoSeed();
+      } catch (seedErr) {
+        console.warn("Error en auto-seed (continuando):", seedErr.message);
       }
-    })();
+
+      isInitialized = true;
+    })().catch((err) => {
+      initPromise = null;
+      isInitialized = false;
+      throw err;
+    });
   }
 
   return initPromise;
@@ -140,10 +116,16 @@ async function initServer() {
 
 app.use(express.json());
 
-// Asegura conexión a MongoDB antes de cada request
 app.use(async (req, res, next) => {
-  await initServer();
-  next();
+  try {
+    await initServer();
+    next();
+  } catch (err) {
+    return res.status(503).json({
+      message: "Servicio temporalmente no disponible (DB no conectada)",
+      detail: err.message,
+    });
+  }
 });
 
 const upload = multer({
@@ -158,35 +140,38 @@ const upload = multer({
   },
 });
 
-// Health check endpoint
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK", timestamp: new Date() });
+  res.status(200).json({
+    status: "OK",
+    dbInitialized: isInitialized,
+    timestamp: new Date(),
+  });
 });
 
 const bookRoutes = require("./routes/bookRoutes");
-// Importamos el controlador de autenticación
 const authController = require("./api/authController");
 
 app.use("/api/books", upload.fields([{ name: "coverImage" }]), bookRoutes);
 
-// Rutas de autenticación
 app.post("/api/login", authController.login);
 app.post("/api/change-password", authController.changePassword);
-// Registro y gestión de usuarios
 app.post("/api/register", authController.register);
 app.get("/api/users", authController.getUsers);
 app.put("/api/users/:username", authController.updateUser);
 app.post("/api/users/:username/block", authController.blockUser);
 
-// Export para Vercel (@vercel/node)
 module.exports = app;
 
-// Levantar servidor solo en ejecución local
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  initServer().finally(() => {
-    app.listen(PORT, () => {
-      console.log(`✅ Servidor en puerto ${PORT}`);
+  initServer()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Servidor en puerto ${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error("No se pudo iniciar el servidor:", err.message);
+      process.exit(1);
     });
-  });
 }
