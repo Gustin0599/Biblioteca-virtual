@@ -241,7 +241,14 @@ function updateWelcomeStats() {
       .then((res) => res.json())
       .then((history) => {
         if (totalLoansElement) {
-          totalLoansElement.textContent = history.length;
+          const onlyLoans = history.filter((log) => {
+            const status = String(log?.status || "")
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .toLowerCase();
+            return status === "prestamo";
+          });
+          totalLoansElement.textContent = onlyLoans.length;
         }
       })
       .catch((e) => console.error("Error al cargar historial para stats:", e));

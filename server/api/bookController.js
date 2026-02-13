@@ -56,7 +56,11 @@ const bookController = {
 
   getLoanHistory: async (req, res) => {
     try {
-      const loans = await Loan.find().sort({ date: -1, createdAt: -1, _id: -1 });
+      const loans = await Loan.find({ isHistoryOnly: true }).sort({
+        date: -1,
+        createdAt: -1,
+        _id: -1,
+      });
       res.json(loans);
     } catch (error) {
       res.status(500).json({ message: error.message });
