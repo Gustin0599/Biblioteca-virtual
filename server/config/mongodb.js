@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 
 let isConnected = false;
 
@@ -10,9 +10,7 @@ const connectDB = async () => {
   }
 
   try {
-    const mongoURI =
-      process.env.MONGODB_URI ||
-      "mongodb+srv://biblioteca_user:Sena.Biblioteca2026@cluster0.gmvpku0.mongodb.net/biblioteca_virtual?retryWrites=true&w=majority";
+    const mongoURI = process.env.MONGODB_URI;
 
     if (!mongoURI) {
       throw new Error("MONGODB_URI no está definido en variables de entorno");

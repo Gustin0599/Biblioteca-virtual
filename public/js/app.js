@@ -729,10 +729,17 @@ function setupEventListeners() {
         loadBooks();
         if (state.currentUser?.role === "admin") loadHistory();
       } else {
+        let errMsg = "No se pudo guardar el libro. Intenta de nuevo.";
+        try {
+          const err = await response.json();
+          if (err?.message) errMsg = err.message;
+        } catch (e) {
+          console.error("Error leyendo respuesta de error:", e);
+        }
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: "No se pudo guardar el libro. Intenta de nuevo.",
+          text: errMsg,
         });
       }
     };
@@ -780,6 +787,15 @@ async function deleteBook(bookId) {
       Swal.fire("Eliminado", "El libro ha sido borrado.", "success");
       loadBooks();
       if (state.currentUser?.role === "admin") loadHistory();
+    } else {
+      let errMsg = "No se pudo eliminar el libro.";
+      try {
+        const err = await res.json();
+        if (err?.message) errMsg = err.message;
+      } catch (e) {
+        console.error("Error leyendo respuesta de error:", e);
+      }
+      Swal.fire("Error", errMsg, "error");
     }
   }
 }
