@@ -116,7 +116,18 @@ async function initServer() {
 
 app.use(express.json());
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    dbInitialized: isInitialized,
+    timestamp: new Date(),
+  });
+});
+
 app.use(async (req, res, next) => {
+  if (req.path === "/health") {
+    return next();
+  }
   try {
     await initServer();
     next();
@@ -138,14 +149,6 @@ const upload = multer({
     }
     cb(new Error("Solo se permiten archivos de imagen"));
   },
-});
-
-app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    dbInitialized: isInitialized,
-    timestamp: new Date(),
-  });
 });
 
 const bookRoutes = require("./routes/bookRoutes");

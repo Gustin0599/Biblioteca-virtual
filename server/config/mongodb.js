@@ -2,18 +2,31 @@
 
 let isConnected = false;
 
+function getMongoUriFromEnv() {
+  const raw =
+    process.env.MONGODB_URI ||
+    process.env.MONGO_URI ||
+    process.env.DATABASE_URL ||
+    "";
+
+  return String(raw)
+    .trim()
+    .replace(/^"(.*)"$/, "$1");
+}
+
 const connectDB = async () => {
-  // Si ya está conectado, retornar
   if (isConnected && mongoose.connection.readyState === 1) {
-    console.log("📌 Ya conectado a MongoDB");
+    console.log("Ya conectado a MongoDB");
     return;
   }
 
   try {
-    const mongoURI = process.env.MONGODB_URI;
+    const mongoURI = getMongoUriFromEnv();
 
     if (!mongoURI) {
-      throw new Error("MONGODB_URI no está definido en variables de entorno");
+      throw new Error(
+        "No hay URI de MongoDB en variables de entorno (MONGODB_URI/MONGO_URI/DATABASE_URL)",
+      );
     }
 
     await mongoose.connect(mongoURI, {
@@ -24,9 +37,9 @@ const connectDB = async () => {
     });
 
     isConnected = true;
-    console.log("✅ Conectado a MongoDB");
+    console.log("Conectado a MongoDB");
   } catch (error) {
-    console.error("❌ Error al conectar MongoDB:", error.message);
+    console.error("Error al conectar MongoDB:", error.message);
     isConnected = false;
     throw error;
   }
